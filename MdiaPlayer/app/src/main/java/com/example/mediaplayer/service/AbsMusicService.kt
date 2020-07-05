@@ -5,4 +5,5 @@ interface AbsMusicService {
     fun stop()
     fun pause()
     fun finish()
+    fun seekToPosition(fraction: Float)
 }

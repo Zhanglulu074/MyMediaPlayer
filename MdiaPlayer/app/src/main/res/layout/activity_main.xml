@@ -41,6 +41,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/music_control_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -86,5 +87,11 @@
             android:text="测试" />
 
     </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/music_seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/music_control_panel"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
