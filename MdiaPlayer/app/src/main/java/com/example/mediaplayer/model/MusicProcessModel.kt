@@ -6,7 +6,7 @@ class MusicProcessModel private constructor(){
 
     private val processData: MutableLiveData<Int> by lazy { MutableLiveData<Int>()}
     companion object {
-        val instace: MusicProcessModel by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+        val instance: MusicProcessModel by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             MusicProcessModel()
         }
     }

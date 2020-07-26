@@ -84,7 +84,7 @@ class MusicService : Service(), AbsMusicService{
             override fun run() {
                 val process = mediaPlayer.currentPosition
                 val percent = process.toFloat() * 1000 / duration
-                MusicProcessModel.instace.getData().postValue((percent.toInt()))
+                MusicProcessModel.instance.getData().postValue((percent.toInt()))
             }
         }
         timer = Timer()

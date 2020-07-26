@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         finishBtn = findViewById(R.id.music_finish_btn)
         testBtn = findViewById(R.id.music_test_btn)
         seekBar = findViewById(R.id.music_seek_bar)
-        processData = MusicProcessModel.instace.getData()
+        processData = MusicProcessModel.instance.getData()
 
         startBtn.setOnClickListener(this)
         pauseBtn.setOnClickListener(this)
