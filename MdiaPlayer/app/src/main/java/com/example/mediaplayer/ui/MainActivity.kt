@@ -9,16 +9,15 @@ import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
+import androidx.databinding.DataBindingUtil
 import com.example.mediaplayer.R
-import com.example.mediaplayer.model.MusicProcessModel
+import com.example.mediaplayer.databinding.ActivityMainBinding
 import com.example.mediaplayer.service.MusicService
+import com.example.mediaplayer.viewmodel.CurrentMusicModel
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -28,14 +27,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private var needUnbind = false
     private lateinit var musicBinder: MusicService.MusicBinder
-    private lateinit var startBtn: Button
-    private lateinit var pauseBtn: Button
-    private lateinit var stopBtn: Button
-    private lateinit var finishBtn: Button
-    private lateinit var testBtn: Button
     private lateinit var seekBar: SeekBar
-    private lateinit var processData: MutableLiveData<Int>
-    private var isChanged = false
+    private lateinit var bind: ActivityMainBinding
 
     private val musicConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -52,7 +45,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        bind = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        bind.currentMusicModel = CurrentMusicModel.instance
         initViews()
         checkReadPermission(::initMusicService)
     }
@@ -74,8 +68,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
                 needUnbind = false
             }
-            else -> {
-            }
+            else -> {}
         }
     }
 
@@ -88,43 +81,29 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initViews() {
-        startBtn = findViewById(R.id.music_start_btn)
-        pauseBtn = findViewById(R.id.music_pause_btn)
-        stopBtn = findViewById(R.id.music_stop_btn)
-        finishBtn = findViewById(R.id.music_finish_btn)
-        testBtn = findViewById(R.id.music_test_btn)
-        seekBar = findViewById(R.id.music_seek_bar)
-        processData = MusicProcessModel.instance.getData()
-
-        startBtn.setOnClickListener(this)
-        pauseBtn.setOnClickListener(this)
-        stopBtn.setOnClickListener(this)
-        finishBtn.setOnClickListener(this)
-        testBtn.setOnClickListener(this)
+        listOf(bind.musicStartBtn, bind.musicPauseBtn, bind.musicStopBtn, bind.musicFinishBtn).forEach {
+            it.setOnClickListener(this)
+        }
+        seekBar = bind.musicSeekBar
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                isChanged = true
+                bind.currentMusicModel?.isChanged?.set(true)
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                isChanged = false
+                bind.currentMusicModel?.isChanged?.set(false)
                 musicBinder.seekToPosition(seekBar!!.progress.toFloat() / seekBar.max)
             }
 
         })
         seekBar.max = 1000
-        processData.observe(this, Observer {
-            if (!isChanged) {
-                seekBar.progress = it
-            }
-        })
     }
 
     private fun initMusicService() {
-        val intent: Intent = Intent(this, MusicService::class.java)
+        val intent = Intent(this, MusicService::class.java)
         bindService(intent, musicConnection, Context.BIND_AUTO_CREATE)
     }
 

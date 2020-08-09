@@ -1,97 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.MainActivity">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <com.example.mediaplayer.widget.CustomTitleBar
-        android:id="@+id/title_bar"
+    <data>
+
+        <variable
+            name="currentMusicModel"
+            type="com.example.mediaplayer.viewmodel.CurrentMusicModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title_bar_left_src="@drawable/back"
-        app:title_bar_right_src="@drawable/confirm"
-        app:title_bar_title="测试" />
+        android:layout_height="match_parent"
+        tools:context=".ui.MainActivity">
 
-    <com.example.mediaplayer.widget.CustomMoveView
-        android:id="@+id/move_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="移动测试"
-        android:textSize="40sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="移动测试"
-        android:textSize="40sp"
-        app:layout_constraintBottom_toTopOf="@+id/move_view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <LinearLayout
-        android:id="@+id/music_control_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/move_view"
-        android:gravity="center_horizontal">
-
-        <Button
-            android:id="@+id/music_start_btn"
+        <TextView
+            android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="开始" />
+            android:text="@{currentMusicModel.musicName}"
+            android:textSize="40sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/music_stop_btn"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/music_control_panel"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="停止" />
+            android:gravity="center_horizontal"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button">
 
-        <Button
-            android:id="@+id/music_pause_btn"
-            android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/music_start_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="开始"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/music_stop_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="停止"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/music_pause_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="暂停"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/music_finish_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="终结"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/music_test_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="测试"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/music_seek_bar"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="暂停"/>
+            android:progress="@{currentMusicModel.currentProgress}"
+            app:layout_constraintTop_toBottomOf="@id/music_control_panel" />
 
-        <Button
-            android:id="@+id/music_finish_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="终结"/>
-
-        <Button
-            android:id="@+id/music_test_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="测试" />
-
-    </LinearLayout>
-
-    <SeekBar
-        android:id="@+id/music_seek_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/music_control_panel"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

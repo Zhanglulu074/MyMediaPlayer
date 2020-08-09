@@ -2,6 +2,7 @@ package com.example.mediaplayer.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.databinding.DataBindingUtil
 import com.example.mediaplayer.R
 import com.example.mediaplayer.component.AppComponent
@@ -23,5 +24,8 @@ class SecondActivity : AppCompatActivity() {
         bind.userMode = userMode
         userMode.userId.set("abc")
         userMode.userName.set("zhanglulu")
+        bind.btAdd.setOnClickListener {
+            userMode.userId.set("cdf")
+        }
     }
 }

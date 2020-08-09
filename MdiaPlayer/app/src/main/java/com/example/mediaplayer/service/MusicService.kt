@@ -6,7 +6,7 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import com.example.mediaplayer.model.MusicProcessModel
+import com.example.mediaplayer.viewmodel.CurrentMusicModel
 import java.io.File
 import java.util.*
 
@@ -75,7 +75,10 @@ class MusicService : Service(), AbsMusicService{
     fun initMediaPlayer() {
         sourcePath = "" + this.getExternalFilesDir(null) + "/Two Steps From Hell - Impossible.mp3"
         Log.d(TAG, "initMediaPlayer: $sourcePath")
-        var file = File(sourcePath)
+        val file = File(sourcePath)
+        val currentMusicModel = CurrentMusicModel.instance
+        currentMusicModel.musicName.set(file.name)
+        currentMusicModel.isChanged.set(false)
         Log.d(TAG, "initMediaPlayer: " + file.exists())
         mediaPlayer.setDataSource(sourcePath)
         mediaPlayer.prepare()
@@ -84,7 +87,9 @@ class MusicService : Service(), AbsMusicService{
             override fun run() {
                 val process = mediaPlayer.currentPosition
                 val percent = process.toFloat() * 1000 / duration
-                MusicProcessModel.instance.getData().postValue((percent.toInt()))
+                if (!currentMusicModel.isChanged.get()!!) {
+                    currentMusicModel.currentProgress.set(percent.toInt())
+                }
             }
         }
         timer = Timer()
