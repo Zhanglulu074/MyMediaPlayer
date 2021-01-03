@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{currentMusicModel.musicName}"
-            android:textSize="40sp"
+            android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -31,56 +31,85 @@
             android:id="@+id/music_control_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/music_control_panel_margin_bottom"
             android:gravity="center_horizontal"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/music_progress_panel"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button">
+            app:layout_constraintStart_toStartOf="parent">
 
             <Button
-                android:id="@+id/music_start_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="开始"
+                android:id="@+id/music_last_btn"
+                android:layout_width="@dimen/music_control_button_size"
+                android:layout_height="@dimen/music_control_button_size"
+                android:background="@drawable/drawable_music_last"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
                 android:textSize="20sp" />
 
-            <Button
-                android:id="@+id/music_stop_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="停止"
-                android:textSize="20sp" />
-
-            <Button
+            <com.example.mediaplayer.widget.MusicProgressButton
                 android:id="@+id/music_pause_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="暂停"
-                android:textSize="20sp" />
+                android:layout_width="@dimen/music_control_button_size"
+                android:layout_height="@dimen/music_control_button_size"
+                android:src="@{currentMusicModel.isPlaying ? @drawable/drawable_music_pause : @drawable/drawable_music_play}"
+                app:progress="@{currentMusicModel.currentProgress}"
+                android:scaleType="centerCrop"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                app:max="@integer/music_progress_base_value"/>
+
 
             <Button
-                android:id="@+id/music_finish_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="终结"
-                android:textSize="20sp" />
-
-            <Button
-                android:id="@+id/music_test_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="测试"
+                android:id="@+id/music_next_btn"
+                android:layout_width="@dimen/music_control_button_size"
+                android:layout_height="@dimen/music_control_button_size"
+                android:background="@drawable/drawable_music_next"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
                 android:textSize="20sp" />
 
         </LinearLayout>
 
-        <SeekBar
-            android:id="@+id/music_seek_bar"
+        <LinearLayout
+            android:id="@+id/music_progress_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:progress="@{currentMusicModel.currentProgress}"
-            app:layout_constraintTop_toBottomOf="@id/music_control_panel" />
+            android:layout_marginStart="@dimen/music_process_panel_margin_start"
+            android:layout_marginTop="@dimen/music_control_panel_margin_bottom"
+            android:layout_marginEnd="@dimen/music_process_panel_margin_end"
+            android:layout_marginBottom="@dimen/music_panel_margin_bottom"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+
+            <TextView
+                android:id="@+id/music_current_time_tv"
+                style="@style/MusicTimeTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="@{currentMusicModel.currentTime}" />
+
+            <SeekBar
+                android:id="@+id/music_seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="@integer/music_progress_base_value"
+                android:progress="@{currentMusicModel.currentProgress}" />
+
+            <TextView
+                android:id="@+id/music_total_time_tv"
+                style="@style/MusicTimeTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="@{currentMusicModel.totalTime}" />
+
+        </LinearLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

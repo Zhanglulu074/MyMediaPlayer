@@ -2,13 +2,18 @@ package com.example.mediaplayer.service
 
 import android.app.Service
 import android.content.Intent
+import android.database.Cursor
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
+import android.provider.MediaStore
 import android.util.Log
+import com.example.mediaplayer.R
+import com.example.mediaplayer.util.Util
 import com.example.mediaplayer.viewmodel.CurrentMusicModel
 import java.io.File
 import java.util.*
+
 
 class MusicService : Service(), AbsMusicService{
     
@@ -25,6 +30,8 @@ class MusicService : Service(), AbsMusicService{
     private lateinit var timer: Timer
 
     private var duration: Int = 1
+
+    private var musicProgressBaseMax = 1f
 
     inner class MusicBinder(): Binder(), AbsMusicService {
         override fun start() {
@@ -72,21 +79,53 @@ class MusicService : Service(), AbsMusicService{
         return MusicBinder()
     }
 
-    fun initMediaPlayer() {
+    private fun initMediaPlayer() {
+        musicProgressBaseMax = resources.getInteger(R.integer.music_progress_base_value).toFloat()
+        val contentResolver = contentResolver
+        val audioColumns = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.MIME_TYPE
+        )
+        val cursor: Cursor = contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            audioColumns,
+            null,
+            null,
+            null
+        )!!
+        cursor.moveToNext()
+        val _id: String =
+            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
+        val filePath: String =
+            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
+        val title: String =
+            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
+        val mime_type: String =
+            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE))
+        Log.d(TAG, "zll initMediaPlayer: _id=$_id")
+        Log.d(TAG, "zll initMediaPlayer: title=$title")
+        Log.d(TAG, "zll initMediaPlayer: filePath=$filePath")
+        Log.d(TAG, "zll initMediaPlayer: mime_type=$mime_type")
         sourcePath = "" + this.getExternalFilesDir(null) + "/Two Steps From Hell - Impossible.mp3"
+        sourcePath = filePath
         Log.d(TAG, "initMediaPlayer: $sourcePath")
         val file = File(sourcePath)
         val currentMusicModel = CurrentMusicModel.instance
-        currentMusicModel.musicName.set(file.name)
+        currentMusicModel.musicName.set(file.name.substring(0, file.name.lastIndexOf(".")))
         currentMusicModel.isChanged.set(false)
         Log.d(TAG, "initMediaPlayer: " + file.exists())
         mediaPlayer.setDataSource(sourcePath)
         mediaPlayer.prepare()
         duration = mediaPlayer.duration
+        currentMusicModel.totalTime.set(Util.getTimeString(duration / 1000))
+        currentMusicModel.musicLength = duration
         task = object : TimerTask() {
             override fun run() {
                 val process = mediaPlayer.currentPosition
-                val percent = process.toFloat() * 1000 / duration
+                currentMusicModel.currentTime.set(Util.getTimeString(process / 1000))
+                val percent = process.toFloat() * musicProgressBaseMax / duration
                 if (!currentMusicModel.isChanged.get()!!) {
                     currentMusicModel.currentProgress.set(percent.toInt())
                 }

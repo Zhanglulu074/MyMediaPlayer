@@ -5,4 +5,9 @@
         <attr name="title_bar_right_src" format="reference" />
         <attr name="title_bar_title" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="MusicProgressButton">
+        <attr name="progress" format="float"/>
+        <attr name="max" format="float"/>
+    </declare-styleable>
 </resources>

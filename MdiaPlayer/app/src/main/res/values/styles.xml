@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="MusicTimeTextStyle">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">#ff000000</item>
+    </style>
+
 </resources>

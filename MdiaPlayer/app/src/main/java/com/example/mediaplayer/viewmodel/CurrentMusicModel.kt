@@ -2,7 +2,7 @@ package com.example.mediaplayer.viewmodel
 
 import androidx.databinding.ObservableField
 
-class CurrentMusicModel private constructor() {
+class CurrentMusicModel() {
 
     companion object {
         val instance: CurrentMusicModel by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
@@ -11,7 +11,14 @@ class CurrentMusicModel private constructor() {
     }
 
     val musicName = ObservableField<String>()
-    val musicLength = ObservableField<Int>()
+    var musicLength = 0
     val currentProgress = ObservableField<Int>()
     val isChanged = ObservableField<Boolean>()
+    val isPlaying = ObservableField<Boolean>()
+    val totalTime = ObservableField<String>()
+    val currentTime = ObservableField<String>()
+
+    init {
+        currentTime.set("0:00")
+    }
 }

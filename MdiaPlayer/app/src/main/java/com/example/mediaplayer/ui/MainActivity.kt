@@ -1,23 +1,24 @@
 package com.example.mediaplayer.ui
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.example.mediaplayer.R
 import com.example.mediaplayer.databinding.ActivityMainBinding
 import com.example.mediaplayer.service.MusicService
+import com.example.mediaplayer.util.Util
 import com.example.mediaplayer.viewmodel.CurrentMusicModel
+import com.tbruyelle.rxpermissions2.RxPermissions
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -29,46 +30,54 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var musicBinder: MusicService.MusicBinder
     private lateinit var seekBar: SeekBar
     private lateinit var bind: ActivityMainBinding
+    private lateinit var rxPermissions: RxPermissions
+    private lateinit var currentMusicModel: CurrentMusicModel
 
     private val musicConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
             needUnbind = false
-            Log.d(TAG, "onServiceDisconnected: ")
         }
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             needUnbind = true
             musicBinder = service as MusicService.MusicBinder
-            Log.d(TAG, "onServiceConnected: ")
         }
     }
 
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bind = DataBindingUtil.setContentView(this, R.layout.activity_main)
         bind.currentMusicModel = CurrentMusicModel.instance
+        currentMusicModel = CurrentMusicModel.instance
+        currentMusicModel.isPlaying.set(false)
+        rxPermissions = RxPermissions(this)
         initViews()
         checkReadPermission(::initMusicService)
     }
 
     override fun onClick(v: View?) {
         when (v?.id) {
-            R.id.music_start_btn -> {
-                musicBinder.start()
-            }
             R.id.music_pause_btn -> {
-                musicBinder.pause()
+                if (currentMusicModel.isPlaying.get()!!) {
+                    musicBinder.pause()
+                    currentMusicModel.isPlaying.set(false)
+                } else {
+                    musicBinder.start()
+                    currentMusicModel.isPlaying.set(true)
+                }
             }
-            R.id.music_stop_btn -> {
+            R.id.music_last_btn -> {
                 musicBinder.stop()
             }
-            R.id.music_finish_btn -> {
+            R.id.music_next_btn -> {
                 if (needUnbind) {
                     unbindService(musicConnection)
                 }
                 needUnbind = false
             }
-            else -> {}
+            else -> {
+            }
         }
     }
 
@@ -81,25 +90,33 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initViews() {
-        listOf(bind.musicStartBtn, bind.musicPauseBtn, bind.musicStopBtn, bind.musicFinishBtn).forEach {
+        listOf(
+            bind.musicPauseBtn,
+            bind.musicLastBtn,
+            bind.musicNextBtn
+        ).forEach {
             it.setOnClickListener(this)
         }
         seekBar = bind.musicSeekBar
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (currentMusicModel.isChanged.get() == true) {
+                    val currentTime = progress * currentMusicModel.musicLength / 1000
+                    currentMusicModel.currentTime.set(Util.getTimeString(currentTime / 1000))
+                }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                bind.currentMusicModel?.isChanged?.set(true)
+                currentMusicModel.isChanged.set(true)
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                bind.currentMusicModel?.isChanged?.set(false)
+                currentMusicModel.isChanged.set(false)
                 musicBinder.seekToPosition(seekBar!!.progress.toFloat() / seekBar.max)
             }
 
         })
-        seekBar.max = 1000
+//        seekBar.max = 1000
     }
 
     private fun initMusicService() {
@@ -108,31 +125,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun checkReadPermission(execution: () -> Unit) {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
-                1
-            )
-        } else {
-            execution()
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            1 -> initMusicService()
-            else -> {
+        val c = rxPermissions
+            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+            .subscribe { granted ->
+                if (granted) {
+                    execution()
+                }
             }
-        }
     }
 }

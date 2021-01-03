@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="music_control_button_size">50dp</dimen>
+    <dimen name="music_panel_margin_bottom">50dp</dimen>
+    <dimen name="music_process_panel_margin_start">15dp</dimen>
+    <dimen name="music_process_panel_margin_end">15dp</dimen>
+    <dimen name="music_control_panel_margin_bottom">20dp</dimen>
+    <fraction name="music_next_button_scale">50%</fraction>
+    <integer name="music_progress_base_value">1000</integer>
+</resources>
