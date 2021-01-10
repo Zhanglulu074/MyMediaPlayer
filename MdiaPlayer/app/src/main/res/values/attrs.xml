@@ -10,4 +10,9 @@
         <attr name="progress" format="float"/>
         <attr name="max" format="float"/>
     </declare-styleable>
+
+    <declare-styleable name="RoundRectImageView">
+        <attr name="image_radius" format="dimension"/>
+    </declare-styleable>
+
 </resources>

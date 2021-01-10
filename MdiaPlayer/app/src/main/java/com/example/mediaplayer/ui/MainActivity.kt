@@ -8,17 +8,24 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.util.EventLog
 import android.util.Log
 import android.view.View
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mediaplayer.R
+import com.example.mediaplayer.adapter.MusicAdapter
 import com.example.mediaplayer.databinding.ActivityMainBinding
+import com.example.mediaplayer.events.MusicLoadEvent
 import com.example.mediaplayer.service.MusicService
 import com.example.mediaplayer.util.Util
 import com.example.mediaplayer.viewmodel.CurrentMusicModel
 import com.tbruyelle.rxpermissions2.RxPermissions
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -54,6 +61,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         rxPermissions = RxPermissions(this)
         initViews()
         checkReadPermission(::initMusicService)
+        EventBus.getDefault().register(this)
     }
 
     override fun onClick(v: View?) {
@@ -132,5 +140,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     execution()
                 }
             }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public fun loadMusicList(event: MusicLoadEvent) {
+        bind.musicListView.adapter = MusicAdapter(event.musicList, this)
+        bind.musicListView.layoutManager = LinearLayoutManager(this)
     }
 }

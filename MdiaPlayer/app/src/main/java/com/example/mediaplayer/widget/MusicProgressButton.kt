@@ -5,6 +5,9 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.util.AttributeSet
 import android.util.Log
 import androidx.appcompat.content.res.AppCompatResources
@@ -54,7 +57,18 @@ class MusicProgressButton: androidx.appcompat.widget.AppCompatImageView {
                     circleHeight = height
                 }
             }
-
+            Thread(object : Runnable {
+                override fun run() {
+                    Looper.prepare()
+                    val subHandler = object : Handler() {
+                        override fun handleMessage(msg: Message) {
+                            super.handleMessage(msg)
+                        }
+                    }
+                    Looper.loop()
+                }
+            })
+            val handler: Handler = Handler()
             paint.style = Paint.Style.STROKE
             paint.strokeJoin = Paint.Join.ROUND;
             paint.strokeCap = Paint.Cap.ROUND;

@@ -1,5 +1,10 @@
 package com.example.mediaplayer.util
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.example.mediaplayer.widget.MusicProgressButton
 import java.lang.StringBuilder
@@ -29,6 +34,18 @@ class Util {
         @BindingAdapter("progress")
         public fun setProgress(musicProgressButton: MusicProgressButton, progress: Int) {
             musicProgressButton.process = progress.toFloat()
+        }
+
+        @JvmStatic
+        @BindingAdapter("imageUri")
+        public fun setImageUri(imageView: ImageView, imageUri: Uri) {
+            val pfd: ParcelFileDescriptor? =
+                imageView.context.contentResolver.openFileDescriptor(imageUri, "r")
+            if (pfd != null) {
+                val fd = pfd.fileDescriptor
+                val bm = BitmapFactory.decodeFileDescriptor(fd);
+                imageView.setImageBitmap(bm)
+            }
         }
     }
 

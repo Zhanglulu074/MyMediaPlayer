@@ -1,22 +1,30 @@
 package com.example.mediaplayer.service
 
 import android.app.Service
+import android.content.ContentUris
 import android.content.Intent
 import android.database.Cursor
+import android.graphics.BitmapFactory
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
+import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import com.example.mediaplayer.R
+import com.example.mediaplayer.events.MusicLoadEvent
 import com.example.mediaplayer.util.Util
 import com.example.mediaplayer.viewmodel.CurrentMusicModel
+import com.example.mediaplayer.viewmodel.MusicModel
+import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.*
 
 
-class MusicService : Service(), AbsMusicService{
-    
+class MusicService : Service, AbsMusicService{
+    constructor() : super()
+
     companion object {
         const val TAG = "MusicService"
     }
@@ -32,6 +40,9 @@ class MusicService : Service(), AbsMusicService{
     private var duration: Int = 1
 
     private var musicProgressBaseMax = 1f
+
+    private val albumArtUri: Uri = Uri.parse("content://media/external/audio/albumart")
+
 
     inner class MusicBinder(): Binder(), AbsMusicService {
         override fun start() {
@@ -86,7 +97,9 @@ class MusicService : Service(), AbsMusicService{
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.MIME_TYPE
+            MediaStore.Audio.Media.MIME_TYPE,
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ARTIST
         )
         val cursor: Cursor = contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -95,21 +108,46 @@ class MusicService : Service(), AbsMusicService{
             null,
             null
         )!!
-        cursor.moveToNext()
-        val _id: String =
-            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
-        val filePath: String =
-            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
-        val title: String =
-            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
-        val mime_type: String =
-            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE))
-        Log.d(TAG, "zll initMediaPlayer: _id=$_id")
-        Log.d(TAG, "zll initMediaPlayer: title=$title")
-        Log.d(TAG, "zll initMediaPlayer: filePath=$filePath")
-        Log.d(TAG, "zll initMediaPlayer: mime_type=$mime_type")
-        sourcePath = "" + this.getExternalFilesDir(null) + "/Two Steps From Hell - Impossible.mp3"
-        sourcePath = filePath
+        var musicList: MutableList<MusicModel> = java.util.ArrayList<MusicModel>()
+        while (cursor.moveToNext()) {
+            val _id: String =
+                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
+            val filePath: String =
+                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
+            val title: String =
+                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
+            val mime_type: String =
+                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE))
+            val artist: String =
+                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
+            val albumId: Long =
+                cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))
+            val uri = ContentUris.withAppendedId(albumArtUri, albumId)
+//            val pfd: ParcelFileDescriptor? =
+//                this.contentResolver.openFileDescriptor(uri, "r")
+//            if (pfd != null) {
+//                val fd = pfd.fileDescriptor
+//                val bm = BitmapFactory.decodeFileDescriptor(fd);
+//            }
+            musicList.add(MusicModel(uri, title, artist, filePath))
+        }
+        EventBus.getDefault().postSticky(MusicLoadEvent(musicList))
+//        cursor.moveToNext()
+//        val _id: String =
+//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
+//        val filePath: String =
+//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
+//        val title: String =
+//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
+//        val mime_type: String =
+//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE))
+//        Log.d(TAG, "zll initMediaPlayer: _id=$_id")
+//        Log.d(TAG, "zll initMediaPlayer: title=$title")
+//        Log.d(TAG, "zll initMediaPlayer: filePath=$filePath")
+//        Log.d(TAG, "zll initMediaPlayer: mime_type=$mime_type")
+//        sourcePath = "" + this.getExternalFilesDir(null) + "/Two Steps From Hell - Impossible.mp3"
+//        sourcePath = filePath
+        sourcePath = musicList[0].musicPath.get()!!
         Log.d(TAG, "initMediaPlayer: $sourcePath")
         val file = File(sourcePath)
         val currentMusicModel = CurrentMusicModel.instance
@@ -165,4 +203,5 @@ class MusicService : Service(), AbsMusicService{
             mediaPlayer.seekTo((fraction * duration).toInt())
         }
     }
+
 }

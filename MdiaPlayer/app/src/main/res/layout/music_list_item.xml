@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="musicModel"
+            type="com.example.mediaplayer.viewmodel.MusicModel" />
+    </data>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        android:gravity="center_vertical">
+
+        <com.example.mediaplayer.widget.RoundRectImageView
+            android:id="@+id/music_icon"
+            android:layout_width="@dimen/music_icon_size"
+            android:layout_height="@dimen/music_icon_size"
+            android:layout_marginStart="@dimen/music_icon_margin_start"
+            app:image_radius="10dp"
+            imageUri="@{musicModel.imageUri}" />
+
+        <TextView
+            android:id="@+id/tv_music_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:layout_marginStart="@dimen/music_name_margin_start"
+            android:text="@{musicModel.musicName}"/>
+
+        <TextView
+            android:id="@+id/tv_music_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:layout_marginStart="@dimen/music_artist_margin_start"
+            android:text="@{musicModel.musicArtist}"/>
+
+    </LinearLayout>
+</layout>
