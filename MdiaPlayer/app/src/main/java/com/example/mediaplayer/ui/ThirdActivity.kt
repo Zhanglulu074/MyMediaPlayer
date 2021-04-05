@@ -31,11 +31,6 @@ class ThirdActivity : AppCompatActivity() {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public fun onMoonEvent(messageEvent: MessageEvent) {
-        bind.tvEventReceiver.text = messageEvent.message
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         EventBus.getDefault().unregister(this)

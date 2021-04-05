@@ -1,28 +1,27 @@
 package com.example.mediaplayer.service
 
 import android.app.Service
-import android.content.ContentUris
 import android.content.Intent
-import android.database.Cursor
-import android.graphics.BitmapFactory
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
-import android.os.ParcelFileDescriptor
-import android.provider.MediaStore
 import android.util.Log
 import com.example.mediaplayer.R
 import com.example.mediaplayer.events.MusicLoadEvent
+import com.example.mediaplayer.repo.Repository
 import com.example.mediaplayer.util.Util
 import com.example.mediaplayer.viewmodel.CurrentMusicModel
+import com.example.mediaplayer.viewmodel.MainPageViewModel
 import com.example.mediaplayer.viewmodel.MusicModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
-import java.io.File
 import java.util.*
 
 
-class MusicService : Service, AbsMusicService{
+class MusicService : Service, MusicControl {
     constructor() : super()
 
     companion object {
@@ -31,7 +30,7 @@ class MusicService : Service, AbsMusicService{
 
     private lateinit var sourcePath: String
 
-    private val mediaPlayer: MediaPlayer by lazy { MediaPlayer() }
+    private lateinit var mediaPlayer: MediaPlayer
 
     private lateinit var task: TimerTask
 
@@ -43,8 +42,13 @@ class MusicService : Service, AbsMusicService{
 
     private val albumArtUri: Uri = Uri.parse("content://media/external/audio/albumart")
 
+    private var curIdx: Int = -1
 
-    inner class MusicBinder(): Binder(), AbsMusicService {
+    private lateinit var currentMusicModel: CurrentMusicModel
+
+    private lateinit var musicList: MutableList<MusicModel>
+
+    inner class MusicBinder() : Binder(), MusicControl {
         override fun start() {
             this@MusicService.start()
         }
@@ -61,27 +65,45 @@ class MusicService : Service, AbsMusicService{
             this@MusicService.finish()
         }
 
+        override fun next() {
+            this@MusicService.next()
+        }
+
+        override fun last() {
+            this@MusicService.last()
+        }
+
         override fun seekToPosition(fraction: Float) {
             this@MusicService.seekToPosition(fraction)
+        }
+
+        override fun switchTo(index: Int) {
+            this@MusicService.switchTo(index)
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: ")
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
         super.onCreate()
+        MusicCrtlCenter.instance.delegate = this
         initMediaPlayer()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        Log.d(TAG, "onUnbind: ")
+        return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: ")
         mediaPlayer.stop()
-        mediaPlayer.release()
+        mediaPlayer.reset()
         timer.cancel()
     }
 
@@ -92,91 +114,42 @@ class MusicService : Service, AbsMusicService{
 
     private fun initMediaPlayer() {
         musicProgressBaseMax = resources.getInteger(R.integer.music_progress_base_value).toFloat()
-        val contentResolver = contentResolver
-        val audioColumns = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.DATA,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.MIME_TYPE,
-            MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.ARTIST
-        )
-        val cursor: Cursor = contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            audioColumns,
-            null,
-            null,
-            null
-        )!!
-        var musicList: MutableList<MusicModel> = java.util.ArrayList<MusicModel>()
-        while (cursor.moveToNext()) {
-            val _id: String =
-                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
-            val filePath: String =
-                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
-            val title: String =
-                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
-            val mime_type: String =
-                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE))
-            val artist: String =
-                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
-            val albumId: Long =
-                cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))
-            val uri = ContentUris.withAppendedId(albumArtUri, albumId)
-//            val pfd: ParcelFileDescriptor? =
-//                this.contentResolver.openFileDescriptor(uri, "r")
-//            if (pfd != null) {
-//                val fd = pfd.fileDescriptor
-//                val bm = BitmapFactory.decodeFileDescriptor(fd);
-//            }
-            musicList.add(MusicModel(uri, title, artist, filePath))
-        }
-        EventBus.getDefault().postSticky(MusicLoadEvent(musicList))
-//        cursor.moveToNext()
-//        val _id: String =
-//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
-//        val filePath: String =
-//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
-//        val title: String =
-//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
-//        val mime_type: String =
-//            cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE))
-//        Log.d(TAG, "zll initMediaPlayer: _id=$_id")
-//        Log.d(TAG, "zll initMediaPlayer: title=$title")
-//        Log.d(TAG, "zll initMediaPlayer: filePath=$filePath")
-//        Log.d(TAG, "zll initMediaPlayer: mime_type=$mime_type")
-//        sourcePath = "" + this.getExternalFilesDir(null) + "/Two Steps From Hell - Impossible.mp3"
-//        sourcePath = filePath
-        sourcePath = musicList[0].musicPath.get()!!
-        Log.d(TAG, "initMediaPlayer: $sourcePath")
-        val file = File(sourcePath)
-        val currentMusicModel = CurrentMusicModel.instance
-        currentMusicModel.musicName.set(file.name.substring(0, file.name.lastIndexOf(".")))
-        currentMusicModel.isChanged.set(false)
-        Log.d(TAG, "initMediaPlayer: " + file.exists())
-        mediaPlayer.setDataSource(sourcePath)
-        mediaPlayer.prepare()
-        duration = mediaPlayer.duration
-        currentMusicModel.totalTime.set(Util.getTimeString(duration / 1000))
-        currentMusicModel.musicLength = duration
-        task = object : TimerTask() {
-            override fun run() {
-                val process = mediaPlayer.currentPosition
-                currentMusicModel.currentTime.set(Util.getTimeString(process / 1000))
-                val percent = process.toFloat() * musicProgressBaseMax / duration
-                if (!currentMusicModel.isChanged.get()!!) {
-                    currentMusicModel.currentProgress.set(percent.toInt())
+        val coroutineScope = CoroutineScope(Dispatchers.Main)
+        coroutineScope.launch {
+            musicList = Repository.getAllMusicInDevice(this@MusicService)
+            EventBus.getDefault().postSticky(MusicLoadEvent(musicList))
+            MainPageViewModel.instance.localMusicList?.addAll(musicList)
+            currentMusicModel = CurrentMusicModel.instance
+            currentMusicModel.isChanged.set(false)
+            mediaPlayer = MediaPlayer()
+            task = object : TimerTask() {
+                override fun run() {
+                    val process = mediaPlayer.currentPosition
+                    currentMusicModel.currentTime.set(Util.getTimeString(process / 1000))
+                    val percent = process.toFloat() * musicProgressBaseMax / duration
+                    if (!currentMusicModel.isChanged.get()!!) {
+                        currentMusicModel.currentProgress.set(percent.toInt())
+                    }
                 }
             }
+            timer = Timer()
+            timer.schedule(task, 0, 300)
+            Repository.writeIntoAlbumDb(this@MusicService, musicList)
         }
-        timer = Timer()
-        timer.schedule(task, 0, 300)
     }
 
+
     override fun start() {
-        Log.d(TAG, "start: ")
-        if (!mediaPlayer.isPlaying) {
-            mediaPlayer.start()
+        try {
+            if (curIdx < 0) {
+                curIdx = 0
+                resetCurrentMusicIdx(currentMusicModel.currentIndex.get() ?: 0, curIdx)
+                currentMusicModel.currentIndex.set(curIdx)
+                playMusicWithIndex(curIdx)
+            } else {
+                mediaPlayer.start()
+            }
+        } catch (e: Exception) {
         }
     }
 
@@ -189,6 +162,22 @@ class MusicService : Service, AbsMusicService{
         if (mediaPlayer.isPlaying) {
             mediaPlayer.pause()
         }
+    }
+
+    override fun last() {
+        curIdx--
+        curIdx = if (curIdx < 0) musicList.size - 1 else curIdx
+        resetCurrentMusicIdx(currentMusicModel.currentIndex.get() ?: 0, curIdx)
+        currentMusicModel.currentIndex.set(curIdx)
+        playMusicWithIndex(curIdx)
+    }
+
+    override fun next() {
+        curIdx++
+        curIdx = if (curIdx > musicList.size - 1) 0 else curIdx
+        resetCurrentMusicIdx(currentMusicModel.currentIndex.get() ?: 0, curIdx)
+        currentMusicModel.currentIndex.set(curIdx)
+        playMusicWithIndex(curIdx)
     }
 
     override fun finish() {
@@ -204,4 +193,34 @@ class MusicService : Service, AbsMusicService{
         }
     }
 
+    private fun playMusicWithIndex(index: Int) {
+        val musicModel = musicList[index]
+        currentMusicModel.musicName.set(musicModel.musicName.get())
+        currentMusicModel.musicImageUri.set(musicModel.imageUri.get())
+        if (mediaPlayer.isPlaying) {
+            mediaPlayer.stop()
+        }
+        mediaPlayer.reset()
+        mediaPlayer.setDataSource(musicModel.musicPath.get())
+        mediaPlayer.setOnPreparedListener {
+            it.start()
+            currentMusicModel.isPlaying.set(true)
+            duration = mediaPlayer.duration
+            currentMusicModel.musicLength = duration
+            currentMusicModel.totalTime.set(Util.getTimeString(duration / 1000))
+        }
+        mediaPlayer.prepare()
+    }
+
+    override fun switchTo(index: Int) {
+        curIdx = index
+        resetCurrentMusicIdx(currentMusicModel.currentIndex.get() ?: 0, curIdx)
+        currentMusicModel.currentIndex.set(index)
+        playMusicWithIndex(index)
+    }
+
+    private fun resetCurrentMusicIdx(old: Int, cur: Int) {
+        musicList[old].isPlaying.set(false)
+        musicList[cur].isPlaying.set(true)
+    }
 }

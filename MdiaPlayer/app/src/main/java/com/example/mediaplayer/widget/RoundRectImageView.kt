@@ -1,12 +1,10 @@
 package com.example.mediaplayer.widget
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.widget.ImageView
 import com.example.mediaplayer.R
 
 class RoundRectImageView: androidx.appcompat.widget.AppCompatImageView {
@@ -23,6 +21,7 @@ class RoundRectImageView: androidx.appcompat.widget.AppCompatImageView {
     ) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.RoundRectImageView)
         imageRadius = typedArray.getDimensionPixelOffset(R.styleable.RoundRectImageView_image_radius, 0)
+        typedArray.recycle()
     }
 
     override fun onDraw(canvas: Canvas?) {

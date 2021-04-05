@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="currentMusicModel"
+            type="com.example.mediaplayer.viewmodel.CurrentMusicModel" />
+
+        <variable
+            name="mainActivityModel"
+            type="com.example.mediaplayer.viewmodel.MainPageViewModel" />
+
+        <import type="com.example.mediaplayer.viewmodel.MainPageViewModel.MusicClickEvent"/>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.MusicPlayActivity"
+        android:background="@drawable/play_music_background">
+
+
+        <ImageView
+            android:id="@+id/big_music_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:musicBigImage="@{currentMusicModel.musicImageUri}" />
+
+        <RelativeLayout
+            android:id="@+id/music_play_title_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginTop="50dp"
+            android:layout_marginHorizontal="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <Button
+                android:id="@+id/play_music_exit_button"
+                android:layout_width="@dimen/play_music_exit_img_width"
+                android:layout_height="@dimen/play_music_exit_img_height"
+                android:layout_alignParentStart="true"
+                android:background="@drawable/drawable_down_arrow"/>
+
+            <TextView
+                android:id="@+id/music_name_tv"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:textColor="#ffffffff"
+                android:gravity="center"
+                android:textSize="20sp"
+                android:text="@{currentMusicModel.musicName}"
+                android:layout_width="@dimen/play_music_name_text_width"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true">
+                <requestFocus/>
+            </TextView>
+
+            <Button
+                android:id="@+id/play_music_shard_btn"
+                android:layout_width="@dimen/play_music_exit_img_width"
+                android:layout_height="@dimen/play_music_exit_img_width"
+                android:background="@drawable/drawable_play_music_share"
+                android:layout_alignParentEnd="true" />
+
+        </RelativeLayout>
+
+        <com.example.mediaplayer.widget.MusicPlayBackground
+            android:id="@+id/music_play_view"
+            android:layout_width="400dp"
+            android:layout_height="400dp"
+            app:layout_constraintBottom_toTopOf="@+id/music_control_panel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/music_play_title_bar"
+            app:isPlaying="@{currentMusicModel.isPlaying()}"
+            app:maxRadius="200dp"
+            app:minRadius="100dp" />
+
+        <com.example.mediaplayer.widget.RoundRectImageView
+            android:id="@+id/music_rotate_image"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            app:image_radius="100dp"
+            app:imageUri="@{currentMusicModel.musicImageUri}"
+            app:layout_constraintBottom_toBottomOf="@+id/music_play_view"
+            app:layout_constraintEnd_toEndOf="@+id/music_play_view"
+            app:layout_constraintStart_toStartOf="@+id/music_play_view"
+            app:layout_constraintTop_toTopOf="@+id/music_play_view" />
+
+        <com.example.mediaplayer.widget.MusicLyricView
+            android:id="@+id/lyric_view"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            app:currentTextColor="@{mainActivityModel.mainPageTextColor}"
+            app:currentTextColorUncheck="@{mainActivityModel.mainPageTextColorUncheck}"
+            app:currentPercent="@{currentMusicModel.currentProgress}"
+            app:layout_constraintBottom_toBottomOf="@+id/music_play_view"
+            app:layout_constraintEnd_toEndOf="@+id/music_play_view"
+            app:layout_constraintStart_toStartOf="@+id/music_play_view"
+            app:layout_constraintTop_toTopOf="@+id/music_play_view"/>
+
+        <LinearLayout
+            android:id="@+id/music_control_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/music_control_panel_margin_bottom"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/music_progress_panel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <Button
+                android:id="@+id/music_last_btn"
+                android:layout_width="@dimen/music_control_button_size"
+                android:layout_height="@dimen/music_control_button_size"
+                android:background="@drawable/drawable_music_last_gray"
+                android:onClick="@{() -> mainActivityModel.onCLick(mainActivityModel.CLICK_LAST_MUSIC)}"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
+                android:textSize="20sp" />
+
+
+            <com.example.mediaplayer.widget.MusicProgressButton
+                android:id="@+id/music_pause_btn"
+                android:layout_width="@dimen/music_control_button_size"
+                android:layout_height="@dimen/music_control_button_size"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:scaleType="centerCrop"
+                android:src="@{currentMusicModel.isPlaying ? @drawable/drawable_music_play_gray : @drawable/drawable_music_pause_gray}"
+                app:max="@integer/music_progress_base_value"
+                android:onClick="@{() -> mainActivityModel.onCLick(mainActivityModel.CLICK_PLAY_MUSIC)}"
+                app:progress="@{currentMusicModel.currentProgress}" />
+
+
+            <Button
+                android:id="@+id/music_next_btn"
+                android:layout_width="@dimen/music_control_button_size"
+                android:layout_height="@dimen/music_control_button_size"
+                android:background="@drawable/drawable_music_next_gray"
+                android:onClick="@{() -> mainActivityModel.onCLick(mainActivityModel.CLICK_NEXT_MUSIC)}"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/music_list_btn"
+                android:layout_width="@dimen/music_control_button_size"
+                android:layout_height="@dimen/music_control_button_size"
+                android:background="@drawable/music_list"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
+                android:layout_marginStart="50dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/music_progress_panel"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginHorizontal="40dp"
+            android:layout_marginBottom="40dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+
+            <TextView
+                android:id="@+id/music_current_time_tv"
+                style="@style/MusicTimeTextStyle"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0"
+                android:text="@{currentMusicModel.currentTime}"
+                android:textColor="@{mainActivityModel.mainPageTextColor}" />
+
+            <SeekBar
+                android:id="@+id/music_seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:splitTrack="false"
+                android:max="@integer/music_progress_base_value"
+                android:maxHeight="5dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:progress="@{currentMusicModel.currentProgress}"
+                android:progressDrawable="@drawable/seekbar_background" />
+
+            <TextView
+                android:id="@+id/music_total_time_tv"
+                style="@style/MusicTimeTextStyle"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0"
+                android:text="@{currentMusicModel.totalTime}"
+                android:textColor="@{mainActivityModel.mainPageTextColor}" />
+
+        </LinearLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</layout>

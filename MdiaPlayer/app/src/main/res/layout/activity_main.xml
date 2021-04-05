@@ -9,6 +9,12 @@
         <variable
             name="currentMusicModel"
             type="com.example.mediaplayer.viewmodel.CurrentMusicModel" />
+
+        <variable
+            name="mainActivityModel"
+            type="com.example.mediaplayer.viewmodel.MainPageViewModel" />
+
+        <import type="com.example.mediaplayer.viewmodel.MainPageViewModel.MusicClickEvent"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,26 +22,26 @@
         android:layout_height="match_parent"
         tools:context=".ui.MainActivity">
 
-        <TextView
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{currentMusicModel.musicName}"
-            android:textSize="20sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/music_list_view"
+        
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/music_list_pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="20dp"
+            android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/music_control_panel"
+            app:layout_constraintHeight_default="spread"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button"
-            app:layout_constraintHeight_default="spread" />
+            app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/music_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabMode="fixed"
+            app:tabGravity="fill"/>
+
+        </androidx.viewpager.widget.ViewPager>
+
 
         <LinearLayout
             android:id="@+id/music_control_panel"
@@ -53,6 +59,7 @@
                 android:layout_width="@dimen/music_control_button_size"
                 android:layout_height="@dimen/music_control_button_size"
                 android:background="@drawable/drawable_music_last"
+                android:onClick="@{() -> mainActivityModel.onCLick(mainActivityModel.CLICK_LAST_MUSIC)}"
                 android:scaleX="0.5"
                 android:scaleY="0.5"
                 android:textSize="20sp" />
@@ -61,12 +68,13 @@
                 android:id="@+id/music_pause_btn"
                 android:layout_width="@dimen/music_control_button_size"
                 android:layout_height="@dimen/music_control_button_size"
-                android:src="@{currentMusicModel.isPlaying ? @drawable/drawable_music_pause : @drawable/drawable_music_play}"
-                app:progress="@{currentMusicModel.currentProgress}"
-                android:scaleType="centerCrop"
                 android:layout_marginStart="50dp"
                 android:layout_marginEnd="50dp"
-                app:max="@integer/music_progress_base_value"/>
+                android:scaleType="centerCrop"
+                android:src="@{currentMusicModel.isPlaying ? @drawable/drawable_music_pause : @drawable/drawable_music_play}"
+                app:max="@integer/music_progress_base_value"
+                android:onClick="@{() -> mainActivityModel.onCLick(mainActivityModel.CLICK_PLAY_MUSIC)}"
+                app:progress="@{currentMusicModel.currentProgress}" />
 
 
             <Button
@@ -74,6 +82,7 @@
                 android:layout_width="@dimen/music_control_button_size"
                 android:layout_height="@dimen/music_control_button_size"
                 android:background="@drawable/drawable_music_next"
+                android:onClick="@{() -> mainActivityModel.onCLick(mainActivityModel.CLICK_NEXT_MUSIC)}"
                 android:scaleX="0.5"
                 android:scaleY="0.5"
                 android:textSize="20sp" />

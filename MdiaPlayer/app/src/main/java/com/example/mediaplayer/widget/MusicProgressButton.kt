@@ -57,26 +57,12 @@ class MusicProgressButton: androidx.appcompat.widget.AppCompatImageView {
                     circleHeight = height
                 }
             }
-            Thread(object : Runnable {
-                override fun run() {
-                    Looper.prepare()
-                    val subHandler = object : Handler() {
-                        override fun handleMessage(msg: Message) {
-                            super.handleMessage(msg)
-                        }
-                    }
-                    Looper.loop()
-                }
-            })
-            val handler: Handler = Handler()
             paint.style = Paint.Style.STROKE
             paint.strokeJoin = Paint.Join.ROUND;
             paint.strokeCap = Paint.Cap.ROUND;
             paint.strokeWidth = 6f
             paint.isAntiAlias = true
-            paint.color = Color.GRAY
-            it.drawCircle(circleWidth / 2f, circleHeight / 2f, circleHeight / 2f, paint)
-            paint.color = Color.BLACK
+            paint.color = Color.WHITE
             it.drawArc(0f, 0f, circleWidth.toFloat(), circleHeight.toFloat(), -90f, 360f *  process / baseMax, false, paint)
         }
     }

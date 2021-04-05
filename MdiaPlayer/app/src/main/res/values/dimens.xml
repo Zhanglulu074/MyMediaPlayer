@@ -9,6 +9,9 @@
     <dimen name="music_icon_margin_start">10dp</dimen>
     <dimen name="music_name_margin_start">20dp</dimen>
     <dimen name="music_artist_margin_start">20dp</dimen>
+    <dimen name="play_music_name_text_width">150dp</dimen>
+    <dimen name="play_music_exit_img_width">25dp</dimen>
+    <dimen name="play_music_exit_img_height">25dp</dimen>
     <fraction name="music_next_button_scale">50%</fraction>
     <integer name="music_progress_base_value">1000</integer>
 </resources>

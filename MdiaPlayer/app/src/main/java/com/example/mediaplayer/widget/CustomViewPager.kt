@@ -2,10 +2,7 @@ package com.example.mediaplayer.widget
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.MotionEvent
-import android.view.VelocityTracker
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Scroller
 import kotlin.math.abs
 
@@ -69,6 +66,7 @@ class CustomViewPager : ViewGroup {
             child.layout(left, 0, left + child.measuredWidth, child.measuredHeight)
             left += child.measuredWidth
         }
+        invalidate()
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {

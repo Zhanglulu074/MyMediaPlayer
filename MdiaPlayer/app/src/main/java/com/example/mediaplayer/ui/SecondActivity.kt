@@ -1,41 +1,21 @@
 package com.example.mediaplayer.ui
 
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.*
+import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.android.volley.Response
-import com.android.volley.toolbox.ImageLoader
-import com.android.volley.toolbox.ImageLoader.*
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
+import androidx.fragment.app.Fragment
 import com.example.mediaplayer.R
-import com.example.mediaplayer.cache.BitmapCache
+import com.example.mediaplayer.adapter.CustomFragmentAdapter
 import com.example.mediaplayer.component.DaggerAppComponent
-import com.example.mediaplayer.data.GitHubRepo
 import com.example.mediaplayer.databinding.ActivitySecondBinding
-import com.example.mediaplayer.events.MessageEvent
-import com.example.mediaplayer.networkinterface.GitHubClient
 import com.example.mediaplayer.viewmodel.UserViewModel
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.greenrobot.eventbus.EventBus
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import javax.inject.Inject
 
-class SecondActivity : AppCompatActivity() {
+class SecondActivity() : AppCompatActivity() {
 
     @Inject
     lateinit var userMode: UserViewModel
@@ -56,11 +36,49 @@ class SecondActivity : AppCompatActivity() {
         bind.userMode = userMode
         userMode.userId.set("abc")
         userMode.userName.set("zhanglulu")
-        bind.btAdd.setOnClickListener {
-            EventBus.getDefault().postSticky(MessageEvent("测试第二次：黏性"))
-            finish()
-
+        var fragList: MutableList<Fragment> = mutableListOf()
+        bind.fragmentViewPager.adapter = CustomFragmentAdapter(supportFragmentManager, fragList)
+        Log.d(TAG, "onCreate: ")
+        val coroutineScope = CoroutineScope(Dispatchers.Main)
+        coroutineScope.launch {
+            val res = async {
+                val text: String = getText()
+                userMode.userId.set(text)
+                Log.d(TAG, "onCreate: threadId1 = " + Thread.currentThread().id)
+                text
+            }
         }
+    }
+
+    suspend fun getText(): String = withContext(Dispatchers.IO) {
+        Log.d(TAG, "onCreate: threadId = " + Thread.currentThread().id)
+        Thread.sleep(1000)
+        "Hello World"
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart: ")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume: ")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause: ")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop: ")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy: ")
     }
 
     @Throws(Exception::class)

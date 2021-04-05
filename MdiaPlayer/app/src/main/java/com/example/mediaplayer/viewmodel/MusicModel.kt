@@ -9,6 +9,7 @@ class MusicModel {
     var musicName =  ObservableField<String>()
     var musicArtist =  ObservableField<String>()
     var musicPath = ObservableField<String>()
+    var isPlaying = ObservableField<Boolean>()
 
     constructor(imageUri: Uri, musicName: String, musicArtist: String, musicPath: String) {
         this.imageUri.set(imageUri)
